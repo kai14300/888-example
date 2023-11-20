@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Maker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        #quiz-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .options {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: normal;
+            letter-spacing: 0.1em;
+            background-color: #c6c4c4;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        #score {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 20px;
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+    <button onclick="checkAnswer()">Submit Answer</button>
+    <button onclick="restartQuiz()" id="restartBtn" style="display: none;">Restart Quiz</button>
+    <div id="score"></div>
+</div>
+
+<script>
+
+/* question format
+
+{
+            question: "  ",
+            options: [
+                
+            "  ", 
+            
+            "  ", 
+            
+            "  "
+        
+        ],
+            correctOption: 1
+        },
+*/
+    const initialQuestions = [
+    {
+  "question": "The MSA (ISA) air temperature at zero altitude is:",
+  "options": [
+    "a) 273.15°K (+0°C)",
+    "b) 288.15°K (-15°C)",
+    "c) 288.15°K (+15°C)"
+  ],
+  "correctOption": 2
+},
+
+
+{
+  "question": "The MSA (ISA) air pressure at zero altitude is:",
+  "options": [
+    "a) 1013.25 Pa",
+    "b) 101325 Pa",
+    "c) 10132.5 Pa"
+  ],
+  "correctOption": 0
+},
+
+{
+  "question": "The MSA (ISA) air density at zero altitude is:",
+  "options": [
+    "a) 1225 kg.m^-3",
+    "b) 1,225 kg.m^-3",
+    "c) 12.25 kg.m^-3"
+  ],
+  "correctOption": 1
+},
+
+{
+  "question": "The MSA (ISA) air acceleration in zero altitude is:",
+  "options": [
+    "a) 98.0665 m.s^-2",
+    "b) 980,665 m.s^-2",
+    "c) 9.80665 m.s^-2"
+  ],
+  "correctOption": 2
+},
+
+{
+  "question": "Tropospheric air temperature according to MSA (ISA) with increasing height:",
+  "options": [
+    "a) rising",
+    "b) does not change",
+    "c) decreasing"
+  ],
+  "correctOption": 2
+},
+
+{
+  "question": "Tropospheric air pressure according to MSA with increasing altitude:",
+  "options": [
+    "a) rising",
+    "b) does not change",
+    "c) decreasing"
+  ],
+  "correctOption": 2
+},
+
+{
+  "question": "According to the International Standard Atmosphere (MSA), the density of air in the troposphere increases with increasing altitude:",
+  "options": [
+    "a) grows in pressure and temperature dependence according to the equation of state for dry air",
+    "b) decreases as a function of pressure and temperature according to the equation of state for dry air",
+    "c) first increases and then decreases sharply (according to Bernoulli's equation)"
+  ],
+  "correctOption": 1
+},
+
+{
+  "question": "If the aircraft is flying at an altitude of 3018m on the altimeter, it will be at feet:",
+  "options": [
+    "a) 990",
+    "b) 9900",
+    "c) 99000"
+  ],
+  "correctOption": 1
+},
+
+{
+  "question": "Tropospheric air density according to MSA (ISA) with increasing height:",
+  "options": [
+    "a) rising",
+    "b) does not change",
+    "c) decreasing"
+  ],
+  "correctOption": 2
+},
+
+{
+  "question": "The atmosphere consists of:",
+  "options": [
+    "a) mixture of nitrogen (78%), CO₂ + noble gases + water vapor, etc (22%)",
+    "b) mixture of oxygen (21%), CO₂ + noble gases + water vapor, etc (79%)",
+    "c) a mixture of nitrogen (78%), oxygen (21%) CO₂ + noble gases, water vapor, etc (1%)"
+  ],
+  "correctOption": 2
+},
+
+{
+  "question": "Basic height division of the atmosphere:",
+  "options": [
+    "a) troposphere, stratosphere, ionosphere, exosphere",
+    "b) tropics, subtropics, temperate",
+    "c) stratosphere, tropics, exosphere"
+  ],
+  "correctOption": 0
+},
+
+{
+  "question": "The MSA (ISA) tropospheric temperature gradient has the value:",
+  "options": [
+    "a) -0.65°K (0.65°C) /100m",
+    "b) -0.65°K (0.65°C) /1000m",
+    "c) -65°K (0.65°C) /1000m"
+  ],
+  "correctOption": 0
+},
+
+{
+  "question": "Air temperature in the stratosphere according to MSA (ISA) with increasing altitude:",
+  "options": [
+    "a) rising",
+    "b) does not change",
+    "c) Declines"
+  ],
+  "correctOption": 1
+},
+
+{
+  "question": "The air layer closest to the ground is called:",
+  "options": [
+    "a) Troposphere",
+    "b) atmosphere",
+    "c) Stratosphere"
+  ],
+  "correctOption": 0
+},
+
+{
+  "question": "The air layer closest to the ground in the BRNA area reaches a height of approx:",
+  "options": [
+    "a) 8 km",
+    "b) 10 km",
+    "c) 18 km"
+  ],
+  "correctOption": 1
+},
+
+
+{
+  "question": "The basic MSA (ISA) constants at zero altitude are:",
+  "options": [
+    "a) T=288.15°K, p=101325Pa, p=1.225 kg.m^-3, g=9.80665m.s^-2",
+    "b) T=288.15°K, p=101325Pa, p=1.225 kg.m^-3",
+    "c) p=101325Pa, p=1.225 kg.m^-3, g=9.80665m.s^-2"
+  ],
+  "correctOption": 0
+},
+
+{
+  "question": "How do we determine the magnitude of the dynamic pressure?",
+  "options": [
+    "a) as the difference between the total pressure and the static pressure as the sum of the total pressure and the",
+    "b) as the sum of the total pressure and the static pressure",
+    "c) as the product of the total pressure and the static pressure"
+  ],
+  "correctOption": 0
+},
+
+{
+  "question": "The speed of sound at zero altitude and temperature +15°C according to MSA is:",
+  "options": [
+    "a) 340.29m.s^-1",
+    "b) 390.29m.s^-1",
+    "c) 240.29m.s^-1"
+  ],
+  "correctOption": 0
+},
+
+{
+  "question": "We determine the Mach number as:",
+  "options": [
+    "a) Ratio of the speed of flight to the speed of sound",
+    "b) Product of the speed of flight and the speed of sound",
+    "c) Difference between the speed of flight and the speed of sound"
+  ],
+  "correctOption": 0
+},
+
+{
+  "question": "Is the magnitude of the Mach number dependent on air temperature and flight altitude?",
+  "options": [
+    "a) Sometimes",
+    "b) Yes",
+    "c) No"
+  ],
+  "correctOption": 1
+},
+
+{
+    "question": "21. The venturi is used to measure the speed of flight up to approx:",
+    "options": [
+        "a) 750 km/h",
+        "b) 450 km/h",
+        "c) 150 km/h"
+    ],
+    "correctOption": 3
+},
+
+{
+    "question": "22. Pitot-static tube is used for measurement:",
+    "options": [
+        "a) Angle of attack",
+        "b) Vertical speeds",
+        "c) Dynamic pressure (airspeed)"
+    ],
+    "correctOption": 3
+},
+
+{
+    "question": "23. The figure shows a pitot-static probe. Which pressure is taken by sensor 1 and which by sensor 2?",
+    "options": [
+        "a) 1 - static, 2 - dynamic",
+        "b) 1 - dynamic, 2 - total",
+        "c) 1 - static, 2 - total"
+    ],
+    "correctOption": 3
+},
+
+{
+    "question": "24. Is the use of a speedometer important for flight safety?",
+    "options": [
+        "a) No",
+        "b) Yes",
+        "c) Does not affect flight safety"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "25. Steady flow is in terms of time:",
+    "options": [
+        "a) Constant (does not change)",
+        "b) Variables",
+        "c) This term is not used in aerodynamics"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "21. The venturi is used to measure the speed of flight up to approx:",
+    "options": [
+        "a) 750 km/h",
+        "b) 450 km/h",
+        "c) 150 km/h"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "22. Pitot-static tube is used for measurement:",
+    "options": [
+        "a) Angle of attack",
+        "b) Vertical speeds",
+        "c) Dynamic pressure (airspeed)"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "23. The figure shows a pitot-static probe. Which pressure is taken by sensor 1 and which by sensor 2?",
+    "options": [
+        "a) 1 - static, 2 - dynamic",
+        "b) 1 - dynamic, 2 - total",
+        "c) 1 - static, 2 - total"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "24. Is the use of a speedometer important for flight safety?",
+    "options": [
+        "a) No",
+        "b) Yes",
+        "c) Does not affect flight safety"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "25. Steady flow is in terms of time:",
+    "options": [
+        "a) Constant (does not change)",
+        "b) Variables",
+        "c) This term is not used in aerodynamics"
+    ],
+    "correctOption": 0
+}
+,
+
+{
+    "question": "26. The flux is refined as:",
+    "options": [
+        "a) A curve in the current to which the velocity vector is always tangent",
+        "b) A curve in the current to which the velocity vector is not always tangent",
+        "c) A straight line connecting the leading and trailing edges"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "27. The basic equation used in aerodynamics that describes the law of conservation of momentum and the law of conservation of energy is:",
+    "options": [
+        "a) Flower's equation",
+        "b) Pascal's equation",
+        "c) Bernoulli equation"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "28. IAS - indicated airspeed is:",
+    "options": [
+        "a) Airspeed indicated by the instrument",
+        "b) Airspeed relative to the ground",
+        "c) Actual airspeed"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "29. The air flows steadily through the circular tube of variable cross-section shown in the figure. Part II shows the static pressure from all three parts of the tube:",
+    "options": [
+        "a) The largest, because the streamlines are the most compressed",
+        "b) The largest, because it has the highest current speed",
+        "c) The smallest, because there is the highest current velocity"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "30. TAS - true airspeed is:",
+    "options": [
+        "a) Actual airspeed",
+        "b) Airspeed relative to the ground",
+        "c) Airspeed indicated by the instrument"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "31. CAS - calibrated airspeed is:",
+    "options": [
+        "a) Corrected airspeed",
+        "b) Actual airspeed",
+        "c) Airspeed indicated by the instrument"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "32. Profiles with a thickness of around 12% achieve:",
+    "options": [
+        "a) The lowest values of the lift coefficient",
+        "b) The lowest values of the coefficient of drag",
+        "c) The highest values of the coefficient of lift"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "33. Profile definition:",
+    "options": [
+        "a) Profile is a curve",
+        "b) The profile is a line",
+        "c) Profile is a closed curve that represents the surface of the wing"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "34. The depth of the profile (bowstring) is:",
+    "options": [
+        "a) The largest dimension of the profile, which represents the junction of the point of inflow and the point of outflow",
+        "b) Line across the profile",
+        "c) The junction of two different (undefined) points on the profile"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "35. The thickness of the profile is given in:",
+    "options": [
+        "a) Inches",
+        "b) In percentage of depth (ratio of max. depth to weight)",
+        "c) Millimetres"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "36. The mean profile curve is defined as:",
+    "options": [
+        "a) The union of the centres of inscribed circles",
+        "b) The union of the centres of the circumscribed circles",
+        "c) A straight line connecting the inflow and outflow points"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "37. The angle of attack is:",
+    "options": [
+        "a) The angle between the chord of the profile and the longitudinal axis of the hull",
+        "b) Angle between the profile tension and the current velocity vector",
+        "c) The angle between the profile centerline and the propeller axis (jet engine axis)"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "38. Wingspan is the distance:",
+    "options": [
+        "a) Between the end of the left and right wing",
+        "b) Between the leading and trailing edge",
+        "c) Between the wing and the horizontal stabilizer"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "39. What geometric characteristics of the profile are indicated in the figure?",
+    "options": [
+        "a) X - thickness, Y - length",
+        "b) X - depth, Y - thickness",
+        "c) X - length, Y - thickness"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "40. Wing taper is defined as:",
+    "options": [
+        "a) The ratio of the depth of the wing at the end to the depth of the wing in the middle, but sometimes the opposite definition is used",
+        "b) Ratio of wing span to wing depth at the centre",
+        "c) Ratio of wing depth to elevator depth"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "41. What does SAT stand for in aerodynamics:",
+    "options": [
+        "a) Standard aerodynamic tables (MSA)",
+        "b) Medium aerodynamic bowstring",
+        "c) Aerodynamic heating temperature"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "42. Induced resistance with increasing speed:",
+    "options": [
+        "a) Growing",
+        "b) Does not change",
+        "c) Declines"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "43. Harmful resistance with increasing speed:",
+    "options": [
+        "a) Growing",
+        "b) Does not change",
+        "c) Declines"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "44. The total drag of the aircraft is:",
+    "options": [
+        "a) The sum of harmful and induced resistance",
+        "b) Induced resistance predominates",
+        "c) Harmful resistance prevails"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "45. The boundary layer is:",
+    "options": [
+        "a) A very thin layer of current adjacent to the surface of a body in which the current velocity increases from zero at the surface to a velocity little affected by surface friction at a distance from the surface",
+        "b) A layer of current where the zero values at the surface increase up to the velocity by surface friction unconfined at a distance of 1m from the surface",
+        "c) Exists only in low viscosity liquids"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "46. The aerodynamic centre of the profile is:",
+    "options": [
+        "a) Point on the profile to which the profile moment coefficient is variable, dependent on the angle of attack",
+        "b) Point on the profile to which the profile moment coefficient depends on the angle of attack",
+        "c) Point on the profile to which the profile moment coefficient is constant, independent of the angle of attack"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "47. The angle of adjustment is:",
+    "options": [
+        "a) Angle clamped by the chord of the wing center profile and the chord of the wing end profile",
+        "b) The angle enclosed by the chord of the wing centerline and the plane of the ground surface",
+        "c) Angle clamped by the chord of the wing centerline and the longitudinal axis of the fuselage"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "48. The swelling is:",
+    "options": [
+        "a) Mutual displacement of boundary layer streamlines",
+        "b) Boundary layer waves between wing and elevator",
+        "c) Continuation of the boundary layer behind the body (profile)"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "49. What is the ratio of lift between the upper and lower surfaces of the profile?",
+    "options": [
+        "a) About 1/4 of the lift or more is exerted by the upper surface and about 3/4 by the lower surface",
+        "b) About 2/3 of the lift or more is exerted by the upper surface and about 1/3 by the lower surface",
+        "c) About 1/3 or more of the lift is exerted by the upper surface and about 2/3 by the lower surface"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "50. Is the lift coefficient dependent on the magnitude of the angle of attack?",
+    "options": [
+        "a) Yes",
+        "b) Angle of attack does not affect the lift coefficient",
+        "c) Yes, but only in horizontal flight"
+    ],
+    "correctOption": 0
+},
+
+
+{
+    "question": "51. The buoyancy line (curve) expresses:",
+    "options": [
+        "a) Dependence of the drag coefficient on the angle of attack",
+        "b) Dependence of lift coefficient on angle of attack",
+        "c) Dependence of the size of the control surfaces on the angle of attack"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "52. The aerodynamic polarity expresses:",
+    "options": [
+        "a) Dependence of the size of the control surfaces on the angle of attack",
+        "b) Dependence of air density on the lift coefficient",
+        "c) Dependence of the drag coefficient on the lift coefficient"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "53. Aerodynamic finesse is intended as:",
+    "options": [
+        "a) Ratio of the lift coefficient to the drag coefficient",
+        "b) Ratio of minimum speed to drag coefficient",
+        "c) Ratio of maximum speed to minimum speed"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "54. Aircraft surface contamination (water film, frost):",
+    "options": [
+        "a) Significantly improves aerodynamic properties",
+        "b) No effect on aerodynamic properties",
+        "c) Significantly degrades aerodynamic properties"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "55. The steady flight is:",
+    "options": [
+        "a) The flight condition (flight mode) in which the aircraft is at rest",
+        "b) A flight condition (flight mode) in which all motion characteristics are constant with time, and the forces and moments acting on the aircraft do not change with time either in magnitude or direction relative to the aircraft",
+        "c) A flight condition (flight mode) in which at least one of the specified quantities (forces and moments acting on the aircraft) is constant with time"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "56. A steady flight is:",
+    "options": [
+        "a) The flight condition (flight mode) in which the aircraft is at rest",
+        "b) A flight condition (flight mode) in which at least one of the specified quantities (forces and moments acting on the aircraft) changes",
+        "c) A flight condition (flight mode) in which all motion characteristics are constant with time"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "57. The slipperiness is:",
+    "options": [
+        "a) The distance the aircraft flies from a unit altitude",
+        "b) The distance the aircraft flies from point A to point B",
+        "c) The distance the aircraft flies from take-off to landing"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "58. Slipperiness depends on:",
+    "options": [
+        "a) Only on the aerodynamic characteristics of the aircraft",
+        "b) Flight height and weight of the aircraft",
+        "c) The art of piloting"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "59. Slipperiness and aerodynamic finesse:",
+    "options": [
+        "a) Are contradictory",
+        "b) These terms are considered synonymous",
+        "c) Glideability refers to the whole aircraft, aerodynamic finesse is a wing parameter"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "60. The speed polar is:",
+    "options": [
+        "a) Line of velocity dependence",
+        "b) The geometric location of the end points of the resultant glide velocity vector from the origin (pole) for different glide angles of the glider, in other words, the dependence of the sink rate Vz on the forward airspeed Vx",
+        "c) Hyperbola indicating the dependence of the angle of attack on the velocity"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "61. The maximum speed is:",
+    "options": [
+        "a) The highest achievable speed of steady straight horizontal flight at maximum sustained engine operation at a given altitude",
+        "b) The maximum achievable speed on the VPD",
+        "c) Highest speed achievable in landing configuration"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "62. The minimum speed is:",
+    "options": [
+        "a) The lowest possible speed at which the aeroplane is capable of maintaining steady straight and level flight",
+        "b) The lowest possible speed on the VPD",
+        "c) Lowest possible speed with the engine off"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "63. The falling speed in a corner is:",
+    "options": [
+        "a) Lower than the stall speed in level flight (other flight conditions and airplane parameters being equal)",
+        "b) The same as the stall speed in level flight (all other flight conditions and airplane parameters being equal)",
+        "c) Greater than the stall speed in level flight (other flight conditions and airplane parameters being equal)"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "64. Flutter is a flight safety issue:",
+    "options": [
+        "a) A very dangerous phenomenon",
+        "b) Does not affect safety",
+        "c) A phenomenon caused deliberately"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "65. The flap on the trailing edge of the wing is:",
+    "options": [
+        "a) Mainly a device to create an effective wing deflection, deflecting the flap will increase the lift coefficient, the increase in drag coefficient is minimal",
+        "b) Especially devices to create maximum resistance",
+        "c) Primarily a device to create greater aesthetic value of the aircraft"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "66. Buoyancy aids on the leading edge:",
+    "options": [
+        "a) Are used to prevent current detachment at the leading edge at low Reynolds numbers or in cases of sharp leading edges, at large angles of attack",
+        "b) Used to reduce the drag coefficient",
+        "c) Used to increase the maximum flight speed"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "67. Whirlpools:",
+    "options": [
+        "a) Used to increase the maximum flight speed",
+        "b) Are used to line the boundary layer and increase the lift coefficient",
+        "c) Used to create the shape complexity of the aircraft"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "68. Spoilers - buoyancy jammers:",
+    "options": [
+        "a) These are extendable plates on the upper side of the wing, which by their extension cause an increase in lift on a certain part of the wing, extended spoilers increase frontal drag",
+        "b) These are extendable plates on the upper side of the wing, which by their extension cause an increase in the safe minimum airspeed",
+        "c) These are extendable plates on the upper side of the wing, which by their extension cause a drop in lift on certain parts of the wing, extended spoilers also increase frontal drag"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "69. Can spoilers be used as atypical cross-steering rudders?",
+    "options": [
+        "a) Yes",
+        "b) No",
+        "c) Only at supersonic speeds"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "70. Aerodynamic brakes:",
+    "options": [
+        "a) Are devices designed to increase the drag of the aeroplane",
+        "b) Are devices designed to increase the lift of the aeroplane",
+        "c) Are devices designed to reduce the drag of the aeroplane"
+    ],
+    "correctOption": 0
+},
+
+
+{
+    "question": "71. There must be lift in a properly executed turn:",
+    "options": [
+        "a) As large as at the same speed in horizontal steady flight (for a glider in gliding flight)",
+        "b) Greater than at the same speed in horizontal steady flight (for a glider in gliding flight)",
+        "c) Less than at the same speed in horizontal steady flight (for a glider in gliding flight)"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "72. The minimum radius of a steady right turn is limited:",
+    "options": [
+        "a) The maximum lift coefficient, the maximum allowable multiplier, and the maximum speed not to be exceeded",
+        "b) Maximum lift coefficient, engine thrust (for powered gliders), and maximum allowable multiplier",
+        "c) Maximum permissible multiplication and 90° angle of inclination"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "73. Aerodynamic forces are generated when a body is flown around. They are called:",
+    "options": [
+        "a) Lift, drag, and resultant aerodynamic force",
+        "b) Buoyancy, gravity, and drag",
+        "c) The resulting aerodynamic force, which is decomposed into lift and drag"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "75. The combined, so-called butterfly tail surfaces are used for steering:",
+    "options": [
+        "a) Turning and yawing (combines lateral and rudder steering)",
+        "b) Yaw and pitch (combines lateral and longitudinal rudders)",
+        "c) Yawing and turning (combines longitudinal and rudder steering)"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "76. The deployment of the flaps mainly causes:",
+    "options": [
+        "a) Increase in lift and drag coefficient",
+        "b) Increase in lift and drag coefficient, besides this, the 'heavy on the head' stumbling moment will occur",
+        "c) An increase in lift coefficient, a decrease in drag coefficient, and, in addition, a 'tail-heavy' stumbling moment"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "77. The slot is:",
+    "options": [
+        "a) Flap on the trailing edge",
+        "b) Hinged wing leading edge",
+        "c) Fixed or extendable flap on the leading edge of the wing"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "78. The slot in the flaps is due to:",
+    "options": [
+        "a) Technological (production of the split flap is easier)",
+        "b) Weight",
+        "c) Aerodynamic (accelerates the boundary layer)"
+    ],
+    "correctOption": 2
+},
+
+{
+    "question": "79. Whirlpools:",
+    "options": [
+        "a) They supply energy to the boundary layer",
+        "b) They take energy from the boundary layer",
+        "c) Do not affect the boundary layer"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "80. Stability is:",
+    "options": [
+        "a) A feature of the aircraft that is not important in level flight",
+        "b) The ability of the aeroplane to maintain and recover the selected flight mode after a failure without pilot intervention",
+        "c) A feature of the aircraft that only the autopilot uses"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "81. Stability is divided into:",
+    "options": [
+        "a) Static and dynamic",
+        "b) Only static",
+        "c) Only dynamic"
+    ],
+    "correctOption": 0
+},
+
+{
+    "question": "82. Static stability is divided into:",
+    "options": [
+        "a) Directional and transverse",
+        "b) Longitudinal, directional, and transverse",
+        "c) Longitudinal and transverse"
+    ],
+    "correctOption": 1
+},
+
+{
+    "question": "83. Which of the above flight modes is steady (i.e. the aircraft has the same speed)?",
+    "options": [
+        "a) Slip and corkscrew",
+        "b) Recovery from dive and corkscrew",
+        "c) Spiral"
+    ],
+    "correctOption": 0
+},
+
+
+
+
+
+
+
+
+   
+    ];
+
+    let questions = [];
+    let unusedQuestions = [];
+    let currentQuestionIndex = 0;
+    let correctAnswers = 0;
+
+    const questionElement = document.getElementById("question");
+    const optionsElement = document.getElementById("options");
+    const scoreElement = document.getElementById("score");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function startQuiz() {
+        questions = [...initialQuestions];
+        unusedQuestions = [...questions];
+        currentQuestionIndex = 0;
+        correctAnswers = 0;
+        shuffleArray(unusedQuestions);
+        displayQuestion();
+    }
+
+    function restartQuiz() {
+        startQuiz();
+        scoreElement.textContent = "";
+        restartBtn.style.display = "none";
+    }
+
+    function displayQuestion() {
+        if (unusedQuestions.length === 0) {
+            alert("Quiz completed!");
+            showScore();
+            restartBtn.style.display = "block";
+            return;
+        }
+
+        const currentQuestion = unusedQuestions.pop();
+        questionElement.textContent = currentQuestion.question;
+
+        const options = [...currentQuestion.options];
+        shuffleArray(options);
+
+        optionsElement.innerHTML = "";
+        options.forEach((option, index) => {
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = "option";
+            radio.value = currentQuestion.options.indexOf(option);
+
+            const label = document.createElement("label");
+            label.appendChild(radio);
+            label.appendChild(document.createTextNode(option));
+
+            optionsElement.appendChild(label);
+            optionsElement.appendChild(document.createElement("br"));
+        });
+    }
+
+    function checkAnswer() {
+        const selectedOption = document.querySelector('input[name="option"]:checked');
+        if (selectedOption !== null) {
+            const userAnswer = parseInt(selectedOption.value);
+            const currentQuestion = questions.find(question => question.question === questionElement.textContent);
+
+            if (userAnswer === currentQuestion.correctOption) {
+                alert("Correct!");
+                correctAnswers++;
+            } else {
+                alert(`Wrong! The correct answer was: ${currentQuestion.options[currentQuestion.correctOption]}`);
+            }
+
+            displayQuestion();
+        } else {
+            alert("Please select an answer.");
+        }
+    }
+
+    function showScore() {
+        scoreElement.textContent = `Your Score: ${correctAnswers} out of ${questions.length}`;
+    }
+
+    // Initial start
+    startQuiz();
+</script>
+
+</body>
+</html>
